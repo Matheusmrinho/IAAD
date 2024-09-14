@@ -53,3 +53,13 @@ def get_exibicoes():
     """)
     exibicoes = cursor.fetchall()
     return exibicoes
+
+def get_filmes_recentes(conn, limit=5):
+    cursor = conn.cursor()
+    query = "SELECT * FROM filme ORDER BY num_filme DESC LIMIT %s"
+    cursor.execute(query, (limit,))
+    filmes = cursor.fetchall()
+    cursor.close()
+    return filmes
+
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes']
