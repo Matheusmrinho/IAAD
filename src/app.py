@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes
+from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado
 from db_connect import connect_db 
 
 # Conectando ao banco de dados
@@ -83,21 +83,25 @@ if st.session_state.current_page == "Início":
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         if st.button("Cadastrar Filme ➕"):
             change_page("Cadastrar Filme")
 
     with col2:
-        if st.button("Consultar Filmes 🔍"):
+        if st.button("Consultar Filmes ❔"):
             change_page("Consultar Filmes")
 
     with col3:
+        if st.button("Modo pesquisa 🔍"):
+            change_page("Modo Pesquisa")
+
+    with col4:
         if st.button("Atualizar Filme ✏️"):
             change_page("Atualizar Filme")
 
-    with col4:
+    with col5:
         if st.button("Remover Filme 🗑️"):
             change_page("Remover Filme")
 
@@ -176,5 +180,33 @@ elif st.session_state.current_page == "Remover Filme":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+elif st.session_state.current_page == "Modo Pesquisa":
+    st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
+    st.subheader("Pesquisa de Filmes")
+    form = st.form('filme')
+
+    # Adicionando filtros
+    with form:
+        titulo = st.text_input("Digite o título do filme")
+        cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
+        ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
+        pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "Estados Unidos", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
+        src = st.form_submit_button("Pesquisar")
+
+    # Função para filtrar os filmes
+    if src:
+        filmes = get_filmes_filtrado(titulo, cat, ano, pais)
+        print(filmes)
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        
+        if df.empty:
+            st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
+        else:
+            st.dataframe(df, height=300, width=800)
+    
+    if st.button("Voltar"):
+        change_page("Início")  # Botão para retornar à página inicial
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 conn.close()
