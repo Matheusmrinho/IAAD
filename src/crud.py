@@ -84,4 +84,17 @@ def get_filmes_filtrado(titulo, cat, ano, pais):
     filmes = cursor.fetchall()
     return filmes
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado']
+def get_filmes_por_ano(conn):
+    query = """
+    SELECT ano_lancamento, COUNT(*) as total
+    FROM filme
+    GROUP BY ano_lancamento
+    ORDER BY ano_lancamento ASC
+    """
+    cursor = conn.cursor()
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano']

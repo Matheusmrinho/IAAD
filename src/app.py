@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
-from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado
+from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
 from db_connect import connect_db 
+import plotly.graph_objects as go
 
 # Conectando ao banco de dados
 conn = connect_db()
@@ -23,7 +24,7 @@ st.markdown("""
 
         /* Painéis de dados */
         .stDataFrame>div { background-color: #ffffff; border-radius: 5px; padding: 10px; }
-        .stDataFrame>div>div { border: none; } /* Removendo bordas amarelas */
+        .stDataFrame>div>div { border: none; } 
 
         /* Resultados dos filmes recentes */
         .result-table { background-color: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; }
@@ -72,6 +73,18 @@ if st.session_state.current_page == "Início":
     df = pd.DataFrame(filmes_recentes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
     html = df.to_html(index=False, classes='result-table')
     st.markdown(html, unsafe_allow_html=True)
+
+     # Gráfico de filmes por ano
+    st.subheader("Filmes por Ano")
+    
+    # Obter dados para o gráfico
+    filmes_por_ano = get_filmes_por_ano(conn)
+    
+    # Transformar em DataFrame
+    df_ano = pd.DataFrame(filmes_por_ano, columns=["Ano", "Total de Filmes"])
+    
+    # Exibir gráfico de barras
+    st.bar_chart(df_ano.set_index('Ano'))
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
