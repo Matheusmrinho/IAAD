@@ -1,5 +1,6 @@
 from db_connect import connect_db
 
+
 # Função para inserir um novo filme
 def insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao):
     db = connect_db()
