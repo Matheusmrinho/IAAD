@@ -64,3 +64,25 @@ def get_filmes_recentes(conn, limit=5):
     return filmes
 
 __all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes']
+def get_filmes_filtrado(titulo, cat, ano, pais):
+    db = connect_db()
+    cursor = db.cursor()
+
+    if titulo == "": titulo = None
+    if cat == "": cat = None
+    if ano == "": ano = None
+    if pais == "": pais = None
+    
+    query = """
+        SELECT * FROM filme
+        WHERE (titulo_brasil LIKE %s OR %s IS NULL)
+        AND (categoria = %s OR %s IS NULL)
+        AND (ano_lancamento = %s OR %s IS NULL)
+        AND (pais_origem = %s OR %s IS NULL)
+    """
+    values = (f"%{titulo}%", f"%{titulo}%", cat, cat, ano, ano, pais, pais)
+    cursor.execute(query, values)
+    filmes = cursor.fetchall()
+    return filmes
+
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado']
