@@ -16,19 +16,19 @@ st.markdown("""
 
         /* Títulos */
         h1, h2, h3 { color: #FF0000; }
-
+            
         /* Botões */
         .stButton>button { background-color: #FFD700; color: #000000; border: none; }
         .stButton>button:hover { background-color: #FFC107; }
 
         /* Painéis de dados */
         .stDataFrame>div { background-color: #ffffff; border-radius: 5px; padding: 10px; }
-        .stDataFrame>div>div { border: 1px solid #FFD700; }
+        .stDataFrame>div>div { border: none; } /* Removendo bordas amarelas */
 
         /* Resultados dos filmes recentes */
-        .result-table { background-color: #f0f0f0; padding: 15px; border-radius: 10px; }
-        .result-table th { background-color: #FFD700; color: #000000; }
-        .result-table td { color: #000000; }
+        .result-table { background-color: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; }
+        .result-table th { background-color: #FFD700; color: #000000; text-align: center; }
+        .result-table td { color: #000000; text-align: center; }
 
         /* Mensagens de sucesso */
         .stSuccess { color: #00FF00; font-weight: bold; }
@@ -42,23 +42,15 @@ st.markdown("""
         .crud-page .stButton>button { background-color: #FF0000; color: #ffffff; }
         .crud-page .stButton>button:hover { background-color: #CC0000; }
 
-        /* Estilizando caixas de input */
+        /* Cor do texto dentro das caixas de input */
         .stTextInput input, .stNumberInput input, .stSelectbox select {
-            background-color: #e0e0e0;  /* Cor do fundo das caixas de input */
-            border-radius: 5px; 
-            border: 1px solid #CCCCCC; /* Cor da borda das caixas de input */
-            color: #000000;
+            color: #FFFFFF;  /* Texto branco dentro das caixas */
         }
 
-        /* Ajustando cor do texto dos labels (textos em cima das caixas) */
+        /* Cor dos labels acima das caixas de input */
         .stTextInput label, .stNumberInput label, .stSelectbox label {
-            color: #000000; 
+            color: #000000;  /* Labels pretos acima das caixas */
             font-weight: bold;
-        }
-
-        /* Ajustando a cor do texto dentro das caixas */
-        .stTextInput input, .stNumberInput input, .stSelectbox select {
-            color: #000000;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -131,10 +123,36 @@ elif st.session_state.current_page == "Cadastrar Filme":
 elif st.session_state.current_page == "Consultar Filmes":
     st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
     st.subheader("Lista de Filmes")
-    filmes = get_filmes()
-    df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
-    st.dataframe(df)
-    
+
+    # Formulário de pesquisa
+    form = st.form('pesquisa_filmes')
+
+    with form:
+        titulo = st.text_input("Digite o título do filme")
+        cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
+        ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
+        pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "Estados Unidos", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
+        src = st.form_submit_button("Pesquisar")
+
+
+    # Filtrar os filmes
+    if src:
+        filmes = get_filmes_filtrado(titulo, cat, ano, pais)
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        
+        if df.empty:
+            st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div class='stSuccess'>Filmes encontrados com sucesso!</div>", unsafe_allow_html=True)
+            st.dataframe(df, height=400)  # Set the height of the dataframe
+
+    else:
+        # Se não há pesquisa, exibir todos os filmes
+        filmes = get_filmes()
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        st.dataframe(df)
+
+    # Botão de voltar
     if st.button("Voltar"):
         change_page("Início")  # Botão para retornar à página inicial
 

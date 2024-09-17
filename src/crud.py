@@ -63,7 +63,6 @@ def get_filmes_recentes(conn, limit=5):
     cursor.close()
     return filmes
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes']
 def get_filmes_filtrado(titulo, cat, ano, pais):
     db = connect_db()
     cursor = db.cursor()
