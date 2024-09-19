@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
 from db_connect import connect_db 
+import plotly.express as px
 
 # Conectando ao banco de dados
 conn = connect_db()
@@ -251,16 +252,68 @@ elif st.session_state.current_page == "Gráficos":
     st.subheader("Gráficos de Filmes")
 
     # Gráfico de filmes por ano
-    st.subheader("Filmes por Ano")
-    
-    # Obter dados para o gráfico
-    filmes_por_ano = get_filmes_por_ano(conn)
-    
+    st.subheader("Pesquise sobre os filmes!")
+
+    # Obter todos os dados dos filmes usando sua função existente
+    filmes_dados = get_filmes()  # Substitua por sua função que retorna os dados
+
     # Transformar em DataFrame
-    df_ano = pd.DataFrame(filmes_por_ano, columns=["Ano", "Total de Filmes"])
-    
-    # Exibir gráfico de barras
-    st.bar_chart(df_ano.set_index('Ano'))
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
+
+    # Exibir uma lista para o usuário selecionar qual dado será mostrado no gráfico
+    opcoes = ["Ano", "País", "Duração"]  # Ajuste conforme suas colunas
+    variavel_escolhida = st.selectbox("Escolha a variável para mostrar no gráfico", opcoes)
+
+    # Contar os filmes por variável escolhida
+    if variavel_escolhida == "Ano":
+        filmes_por_variavel = df_filmes.groupby("Ano").size().reset_index(name='Total de Filmes')
+    elif   variavel_escolhida == "País":
+        filmes_por_variavel = df_filmes.groupby("País").size().reset_index(name='Total de Filmes')
+    elif variavel_escolhida == "Duração":
+        filmes_por_variavel = df_filmes.groupby("Duração").size().reset_index(name='Total de Filmes')
+
+    # Exibir o gráfico de barras com base na variável escolhida
+    st.bar_chart(filmes_por_variavel.set_index(variavel_escolhida)['Total de Filmes'])
+
+    #########################
+
+
+    # Obter todos os dados dos filmes
+    filmes_dados = get_filmes()  # Ajuste conforme necessário
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
+
+    # Escolha das variáveis
+    opcoes_variaveis = ["Ano", "País", "Duração"]  # Ajuste conforme suas colunas
+
+    variavel_x = st.selectbox("Escolha a variável para o eixo X", opcoes_variaveis)
+    variavel_y = st.selectbox("Escolha a variável para o eixo Y", opcoes_variaveis)
+
+        # Filtrando dados para o gráfico
+    if variavel_x == "Ano":
+        x_data = df_filmes['Ano']
+    elif variavel_x == "Duração":
+        x_data = df_filmes['Duração']
+    else:  # "País"
+        x_data = df_filmes['País']
+
+    if variavel_y == "Ano":
+        y_data = df_filmes['Ano']
+    elif variavel_y == "Duração":
+        y_data = df_filmes['Duração']
+    else:  # "País"
+        y_data = df_filmes['País']
+    # Exibir gráfico de dispersão
+    st.subheader(f"Gráfico de Dispersão: {variavel_x} vs {variavel_y}")
+    if not x_data.empty and not y_data.empty:
+        scatter_data = pd.DataFrame({variavel_x: x_data, variavel_y: y_data})
+    if variavel_x == "País":
+        scatter_data[variavel_x] = scatter_data[variavel_x].astype(str)
+    # Exibir gráfico de dispersão
+    st.write(scatter_data)
+    st.bar_chart(scatter_data.set_index(variavel_x))
+    fig = px.scatter(scatter_data, x=variavel_x, y=variavel_y, title=f"Gráfico de Dispersão: {variavel_x} vs {variavel_y}")
+    st.plotly_chart(fig)
+
 
     if st.button("Voltar"):
         change_page("Início")
