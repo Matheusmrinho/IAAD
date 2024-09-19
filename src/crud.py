@@ -21,15 +21,15 @@ def get_filmes():
     return filmes
 
 # Função para atualizar um filme
-def update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao):
+def update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor):
     db = connect_db()
     cursor = db.cursor()
     query = """
         UPDATE filme
-        SET titulo_original = %s, titulo_brasil = %s, ano_lancamento = %s, pais_origem = %s, categoria = %s, duracao = %s
-        WHERE num_filme = %s
+        SET titulo_original = %s, titulo_brasil = %s, ano_lancamento = %s, pais_origem = %s, categoria = %s, duracao = %s, num_diretor = %s
+        WHERE num_filme = %s, num_diretor = %s
     """
-    values = (titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_filme)
+    values = (titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_filme, num_diretor)
     cursor.execute(query, values)
     db.commit()
 
@@ -53,3 +53,16 @@ def get_exibicoes():
     """)
     exibicoes = cursor.fetchall()
     return exibicoes
+def update_diretor(num_filme, num_diretor):
+    db = connect_db()
+    cursor = db.cursor()
+    query = """
+        UPDATE filme
+        SET num_diretor = %s
+        WHERE num_filme = %s
+    """
+    values = (num_diretor, num_filme)
+    cursor.execute(query, values)
+    db.commit()
+
+
