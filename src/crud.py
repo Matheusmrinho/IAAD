@@ -2,16 +2,73 @@ from db_connect import connect_db
 
 
 # Função para inserir um novo filme
-def insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao):
+def insert_filme(num_filme, titulo_original, titulo_brasil, diretor, ano_lancamento, pais_origem, categoria, duracao):
+    db = connect_db()
+    cursor = db.cursor()
+    diret_c = diretor.title()
+
+    query = "SELECT nome_diretor FROM diretor WHERE nome_diretor = %s"
+    cursor.execute(query, (diret_c,))
+    result = cursor.fetchone()
+
+    if result is None:
+        query = "INSERT INTO diretor (nome_diretor, num_diretor) VALUES (%s, %s)"
+        cursor.execute(query, (diret_c, max_diretor_key()))
+        db.commit()
+
+    query = """
+        INSERT INTO filme (num_filme, titulo_original, titulo_brasil, nome_diretor, ano_lancamento, pais_origem, categoria, duracao)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    values = (num_filme, titulo_original, titulo_brasil, diret_c, ano_lancamento, pais_origem, categoria, duracao)
+    cursor.execute(query, values)
+    db.commit()
+
+# Função para pegar o próximo número de filme disponível
+def get_new_numfilm():
+    db = connect_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT MAX(num_filme) FROM filme")
+    num_filme = cursor.fetchone()
+    return num_filme[0] + 1
+
+# Função para ler todos os diretores
+def get_diretores():
+    db = connect_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT nome_diretor FROM diretor")
+    diretores = cursor.fetchall()
+    for i in range(len(diretores)):
+        diretores[i] = diretores[i][0]
+    return diretores
+
+def max_diretor_key():
+    db = connect_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT MAX(num_diretor) FROM diretor")
+    num_diretor = cursor.fetchone()
+    return num_diretor[0] + 1
+
+# Função para inserir diretor
+def insert_diretor(nome_diretor):
     db = connect_db()
     cursor = db.cursor()
     query = """
-        INSERT INTO filme (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO diretor (nome_diretor)
+        VALUES (%s)
     """
-    values = (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
-    cursor.execute(query, values)
+    cursor.execute(query, (nome_diretor,))
     db.commit()
+
+# Função para remover diretor
+def remover_diretor(nome_diretor):
+    db = connect_db()
+    cursor = db.cursor()
+    query = """
+        DELETE FROM diretor WHERE nome_diretor = %s
+    """
+    cursor.execute(query, (nome_diretor,))
+    db.commit()                                                      
 
 # Função para ler todos os filmes
 def get_filmes():
@@ -113,4 +170,4 @@ def get_filmes_por_ano(conn):
     cursor.close()
     return result
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado']
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor']

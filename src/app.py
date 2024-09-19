@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
+from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, insert_diretor, remover_diretor
 from db_connect import connect_db 
 import plotly.express as px
 
@@ -87,7 +87,7 @@ if st.session_state.current_page == "Início":
     
     # Exibindo filmes recentes
     filmes_recentes = get_filmes_recentes(conn)  
-    df = pd.DataFrame(filmes_recentes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
+    df = pd.DataFrame(filmes_recentes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
     html = df.to_html(index=False, classes='result-table')
     st.markdown(html, unsafe_allow_html=True)
 
@@ -123,10 +123,13 @@ elif st.session_state.current_page == "Cadastrar Filme":
     st.subheader("Cadastro de Filmes")
     
     with st.form("Cadastro Filme"):
-        num_filme = st.number_input("Número do Filme", min_value=1)
+        diretores = get_diretores()
+        num_value = get_new_numfilm()
+        num_filme = st.number_input("Número do Filme", min_value=int(num_value))
         titulo_original = st.text_input("Título Original")
         titulo_brasil = st.text_input("Título no Brasil")
-        ano_lancamento = st.number_input("Ano de Lançamento", min_value=1800, max_value=2024)
+        diretor = st.text_input("Diretor")
+        ano_lancamento = st.number_input("Ano de Lançamento", min_value=1900, max_value=2024)
         pais_origem = st.text_input("País de Origem")
         categoria = st.selectbox("Categoria", ["Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"])
         duracao = st.number_input("Duração (minutos)", min_value=1)
@@ -142,10 +145,12 @@ elif st.session_state.current_page == "Cadastrar Filme":
             else:
                 try:
                     # Inserir o filme no banco de dados
-                    insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
+                    insert_filme(num_filme, titulo_original, titulo_brasil, diretor, ano_lancamento, pais_origem, categoria, duracao)
                     st.markdown(f"<div class='stSuccess'>Filme '{titulo_brasil}' cadastrado com sucesso!</div>", unsafe_allow_html=True)
+                #except Exception as e:
+                    #st.markdown("<div class='stError'>Erro: O índice já existe. Tente cadastrar um filme com um número diferente!</div>", unsafe_allow_html=True)
                 except Exception as e:
-                    st.markdown("<div class='stError'>Erro: O índice já existe. Tente cadastrar um filme com um número diferente!</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='stError'>Erro: {e}</div>", unsafe_allow_html=True)
 
     
     if st.button("Voltar"):
@@ -213,6 +218,7 @@ elif st.session_state.current_page == "Atualizar Filme":
             num_filme = filme_selecionado[0]
             titulo_original = st.text_input("Título Original", value=filme_selecionado[1])
             titulo_brasil = st.text_input("Título no Brasil", value=filme_selecionado[2])
+            diretor = st.text_input("Diretor", value=filme_selecionado[7])
             ano_lancamento = st.number_input("Ano de Lançamento", min_value=1800, max_value=2024, value=filme_selecionado[3])
             pais_origem = st.text_input("País de Origem", value=filme_selecionado[4])
             categoria = st.text_input("Categoria", value=filme_selecionado[5])
@@ -234,8 +240,12 @@ elif st.session_state.current_page == "Remover Filme":
     filme_selecionado = st.selectbox("Selecione um Filme para Remover", filmes, format_func=lambda x: x[2])
     
     if st.button(f"Remover '{filme_selecionado[2]}'"):
-        delete_filme(filme_selecionado[0])
-        st.markdown(f"<div class='stSuccess'>Filme '{filme_selecionado[2]}' removido com sucesso!</div>", unsafe_allow_html=True)
+        try:
+            delete_filme(filme_selecionado[0])
+            st.markdown(f"<div class='stSuccess'>Filme '{filme_selecionado[2]}' removido com sucesso!</div>", unsafe_allow_html=True)
+            st.session_state.current_page = "Remover Filme"
+        except Exception as e:
+            st.markdown(f"<div class='stError'>Erro ao remover filme: ele está em exibição</div>", unsafe_allow_html=True)
     
     if st.button("Voltar"):
         change_page("Início")  
