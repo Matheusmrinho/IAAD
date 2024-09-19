@@ -164,12 +164,23 @@ elif st.session_state.current_page == "Consultar Filmes":
         titulo = st.text_input("Digite o título do filme")
         cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
         ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
-        pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "Estados Unidos", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
+        pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "EUA", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
         src = st.form_submit_button("Pesquisar")
 
 
-    # Filtrar os filmes
+     # Filtrar os filmes
     if src:
+        # Tratar campos vazios como None para a consulta
+        if not titulo:
+            titulo = None
+        if not cat:
+            cat = None
+        if ano == 0:  # Evitar o valor 0 para o ano
+            ano = None
+        if not pais:
+            pais = None
+
+        # Obter filmes filtrados
         filmes = get_filmes_filtrado(titulo, cat, ano, pais)
         df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
         
@@ -177,7 +188,7 @@ elif st.session_state.current_page == "Consultar Filmes":
             st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
         else:
             st.markdown("<div class='stSuccess'>Filmes encontrados com sucesso!</div>", unsafe_allow_html=True)
-            st.dataframe(df, height=400)  # Set the height of the dataframe
+            st.dataframe(df, height=400)  # Define o tamanho da tabela exibida
 
     else:
         # Se não há pesquisa, exibir todos os filmes

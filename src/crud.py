@@ -67,20 +67,21 @@ def get_filmes_filtrado(titulo, cat, ano, pais):
     db = connect_db()
     cursor = db.cursor()
 
-    if titulo == "": titulo = None
-    if cat == "": cat = None
-    if ano == "": ano = None
-    if pais == "": pais = None
-    
+    # Query base
     query = """
         SELECT * FROM filme
-        WHERE (titulo_brasil LIKE %s OR %s IS NULL)
-        AND (categoria = %s OR %s IS NULL)
-        AND (ano_lancamento = %s OR %s IS NULL)
-        AND (pais_origem = %s OR %s IS NULL)
+        WHERE (%s IS NULL OR titulo_brasil LIKE %s)
+        AND (%s IS NULL OR categoria = %s)
+        AND (%s IS NULL OR ano_lancamento = %s)
+        AND (%s IS NULL OR pais_origem = %s)
     """
-    values = (f"%{titulo}%", f"%{titulo}%", cat, cat, ano, ano, pais, pais)
-    cursor.execute(query, values)
+
+    # Atribuir None para variáveis vazias e evitar problemas com %s
+    if titulo:
+        titulo = f"%{titulo}%"
+
+    # Executar a query com os valores
+    cursor.execute(query, (titulo, titulo, cat, cat, ano, ano, pais, pais))
     filmes = cursor.fetchall()
     return filmes
 
