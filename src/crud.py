@@ -2,14 +2,14 @@ from db_connect import connect_db
 
 
 # Função para inserir um novo filme
-def insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor):
+def insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao):
     db = connect_db()
     cursor = db.cursor()
     query = """
-        INSERT INTO filme (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO filme (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
-    values = (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor)
+    values = (num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
     cursor.execute(query, values)
     db.commit()
 
@@ -17,24 +17,20 @@ def insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais
 def get_filmes():
     db = connect_db()
     cursor = db.cursor()
-    cursor.execute("""
-        SELECT f.*, d.num_diretor AS num_diretor
-        FROM filme f
-        LEFT JOIN diretor d ON f.num_diretor = d.num_diretor
-    """)
+    cursor.execute("SELECT * FROM filme")
     filmes = cursor.fetchall()
     return filmes
 
 # Função para atualizar um filme
-def update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor):
+def update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao):
     db = connect_db()
     cursor = db.cursor()
     query = """
         UPDATE filme
-        SET titulo_original = %s, titulo_brasil = %s, ano_lancamento = %s, pais_origem = %s, categoria = %s, duracao = %s, num_diretor = %s
+        SET titulo_original = %s, titulo_brasil = %s, ano_lancamento = %s, pais_origem = %s, categoria = %s, duracao = %s
         WHERE num_filme = %s
     """
-    values = (titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_diretor, num_filme)
+    values = (titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, num_filme)
     cursor.execute(query, values)
     db.commit()
 
@@ -61,18 +57,13 @@ def get_exibicoes():
 
 def get_filmes_recentes(conn, limit=5):
     cursor = conn.cursor()
-    query = """
-        SELECT f.*, d.num_diretor AS num_diretor
-        FROM filme f
-        LEFT JOIN diretor d ON f.num_diretor = d.num_diretor
-        ORDER BY f.num_filme DESC LIMIT %s
-    """
+    query = "SELECT * FROM filme ORDER BY num_filme DESC LIMIT %s"
     cursor.execute(query, (limit,))
     filmes = cursor.fetchall()
     cursor.close()
     return filmes
 
-def get_filmes_filtrado(titulo, cat, ano, pais, num_diretor=None):
+def get_filmes_filtrado(titulo, cat, ano, pais):
     db = connect_db()
     cursor = db.cursor()
 
@@ -82,16 +73,13 @@ def get_filmes_filtrado(titulo, cat, ano, pais, num_diretor=None):
     if pais == "": pais = None
     
     query = """
-        SELECT f.*, d.num_diretor AS num_diretor
-        FROM filme f
-        LEFT JOIN diretor d ON f.num_diretor = d.num_diretor
-        WHERE (f.titulo_brasil LIKE %s OR %s IS NULL)
-        AND (f.categoria = %s OR %s IS NULL)
-        AND (f.ano_lancamento = %s OR %s IS NULL)
-        AND (f.pais_origem = %s OR %s IS NULL)
-        AND (f.num_diretor = %s OR %s IS NULL)
+        SELECT * FROM filme
+        WHERE (titulo_brasil LIKE %s OR %s IS NULL)
+        AND (categoria = %s OR %s IS NULL)
+        AND (ano_lancamento = %s OR %s IS NULL)
+        AND (pais_origem = %s OR %s IS NULL)
     """
-    values = (f"%{titulo}%", f"%{titulo}%", cat, cat, ano, ano, pais, pais, num_diretor, num_diretor)
+    values = (f"%{titulo}%", f"%{titulo}%", cat, cat, ano, ano, pais, pais)
     cursor.execute(query, values)
     filmes = cursor.fetchall()
     return filmes
