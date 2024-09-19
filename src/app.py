@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
 from db_connect import connect_db 
-import plotly.graph_objects as go
 
 # Conectando ao banco de dados
 conn = connect_db()
@@ -13,35 +12,32 @@ st.title("Sistema de Programação de Filmes 🎬")
 st.markdown("""
     <style>
         /* Cor de fundo do app */
-        .main { background-color: #ffffff; }
+        .main { background-color: #000000; }
 
         /* Títulos */
-        h1, h2, h3 { color: #FF0000; }
-            
-        /* Botões */
-        .stButton>button { background-color: #FFD700; color: #000000; border: none; }
-        .stButton>button:hover { background-color: #FFC107; }
+        h1, h2, h3 { color: #FFFFFF; }
+
+        /* Botões (remover o fundo amarelo e deixar o padrão) */
+        .stButton>button { 
+            color: #FFFFFF;  /* Cor do texto preto */
+            border: 1px solid #000000;  /* Borda preta opcional */
+        }
+        .stButton>button:hover { 
+            background-color: #FFFFFF;  /* Fundo branco ao passar o mouse */
+            color: #000000;  /* Texto preto */
+        }
 
         /* Painéis de dados */
-        .stDataFrame>div { background-color: #ffffff; border-radius: 5px; padding: 10px; }
-        .stDataFrame>div>div { border: none; } 
-
-        /* Resultados dos filmes recentes */
-        .result-table { background-color: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; }
-        .result-table th { background-color: #FFD700; color: #000000; text-align: center; }
-        .result-table td { color: #000000; text-align: center; }
+        .stDataFrame>div>div { border: none; }
 
         /* Mensagens de sucesso */
         .stSuccess { color: #00FF00; font-weight: bold; }
 
-        /* Estilo das colunas */
-        .stColumn { padding: 10px; }
-
         /* Páginas CRUD */
-        .crud-page { background-color: #ffffff; padding: 15px; border-radius: 10px; }
-        .crud-page h3 { color: #FF0000; }
-        .crud-page .stButton>button { background-color: #FF0000; color: #ffffff; }
-        .crud-page .stButton>button:hover { background-color: #CC0000; }
+        .crud-page {
+            background-color: #FFFFFF;
+            border-radius: 10px;
+        }
 
         /* Cor do texto dentro das caixas de input */
         .stTextInput input, .stNumberInput input, .stSelectbox select {
@@ -50,11 +46,31 @@ st.markdown("""
 
         /* Cor dos labels acima das caixas de input */
         .stTextInput label, .stNumberInput label, .stSelectbox label {
-            color: #000000;  /* Labels pretos acima das caixas */
+            color: #FFFFFF;  /* Labels brancos acima das caixas */
             font-weight: bold;
+        }
+
+        /* Ajuste de margens do conteúdo */
+        form {
+            margin-top: 0;  /* Elimina o espaçamento acima do formulário */
+            margin-bottom: 0; /* Elimina o espaçamento abaixo do formulário */
+        }
+
+        /* Estilização da tabela de filmes recentemente adicionados */
+        .result-table {
+            background-color: initial; /* Remove o fundo personalizado */
+            padding: 0; /* Remove o padding */
+            border-radius: 0; /* Remove o arredondamento */
+            text-align: center; /* Centraliza o texto na tabela */
+        }
+        .result-table th, .result-table td {
+            background-color: initial; /* Remove o fundo das células */
+            color: initial; /* Remove a cor personalizada do texto */
+            text-align: center;  /* Centraliza o texto das células */
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 # Inicializando o estado da página
 if 'current_page' not in st.session_state:
@@ -74,21 +90,15 @@ if st.session_state.current_page == "Início":
     html = df.to_html(index=False, classes='result-table')
     st.markdown(html, unsafe_allow_html=True)
 
-     # Gráfico de filmes por ano
-    st.subheader("Filmes por Ano")
-    
-    # Obter dados para o gráfico
-    filmes_por_ano = get_filmes_por_ano(conn)
-    
-    # Transformar em DataFrame
-    df_ano = pd.DataFrame(filmes_por_ano, columns=["Ano", "Total de Filmes"])
-    
-    # Exibir gráfico de barras
-    st.bar_chart(df_ano.set_index('Ano'))
+    st.subheader("Extras")
+    col1, = st.columns(1)
+    with col1:
+        if st.button("Gráficos ➡️"):
+            change_page("Gráficos")
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         if st.button("Cadastrar Filme ➕"):
@@ -99,14 +109,10 @@ if st.session_state.current_page == "Início":
             change_page("Consultar Filmes")
 
     with col3:
-        if st.button("Modo pesquisa 🔍"):
-            change_page("Modo Pesquisa")
-
-    with col4:
         if st.button("Atualizar Filme ✏️"):
             change_page("Atualizar Filme")
 
-    with col5:
+    with col4:
         if st.button("Remover Filme 🗑️"):
             change_page("Remover Filme")
 
@@ -239,5 +245,24 @@ elif st.session_state.current_page == "Modo Pesquisa":
         change_page("Início")  # Botão para retornar à página inicial
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+elif st.session_state.current_page == "Gráficos":
+    st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
+    st.subheader("Gráficos de Filmes")
+
+    # Gráfico de filmes por ano
+    st.subheader("Filmes por Ano")
+    
+    # Obter dados para o gráfico
+    filmes_por_ano = get_filmes_por_ano(conn)
+    
+    # Transformar em DataFrame
+    df_ano = pd.DataFrame(filmes_por_ano, columns=["Ano", "Total de Filmes"])
+    
+    # Exibir gráfico de barras
+    st.bar_chart(df_ano.set_index('Ano'))
+
+    if st.button("Voltar"):
+        change_page("Início")
 
 conn.close()
