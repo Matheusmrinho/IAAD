@@ -3,6 +3,7 @@ import pandas as pd
 from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, start_routine
 from db_connect import connect_db 
 import plotly.express as px
+from datetime import datetime
 
 # Conectando ao banco de dados
 conn = connect_db()
@@ -130,7 +131,7 @@ elif st.session_state.current_page == "Cadastrar Filme":
         titulo_original = st.text_input("Título Original")
         titulo_brasil = st.text_input("Título no Brasil")
         diretor = st.text_input("Diretor")
-        ano_lancamento = st.number_input("Ano de Lançamento", min_value=1900, max_value=2024)
+        ano_lancamento = st.number_input("Ano de Lançamento", min_value=1901, max_value=datetime.now().year)
         pais_origem = st.text_input("País de Origem")
         categoria = st.selectbox("Categoria", ["Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"])
         duracao = st.number_input("Duração (minutos)", min_value=1)
@@ -170,7 +171,7 @@ elif st.session_state.current_page == "Consultar Filmes":
         titulo = st.text_input("Digite o título do filme")
         cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
         diretor = st.selectbox("Selecione o diretor", [""] + get_diretores(), placeholder='')
-        ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
+        ano = st.number_input("Digite o ano de lançamento", min_value=1901, max_value=datetime.now().year, value=None)
         pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "EUA", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
         src = st.form_submit_button("Pesquisar")
 
@@ -221,7 +222,7 @@ elif st.session_state.current_page == "Atualizar Filme":
             titulo_original = st.text_input("Título Original", value=filme_selecionado[1])
             titulo_brasil = st.text_input("Título no Brasil", value=filme_selecionado[2])
             diretor = st.text_input("Diretor", value=filme_selecionado[7])
-            ano_lancamento = st.number_input("Ano de Lançamento", min_value=1800, max_value=2024, value=filme_selecionado[3])
+            ano_lancamento = st.number_input("Ano de Lançamento", min_value=1901, max_value=datetime.now().year, value=filme_selecionado[3])
             pais_origem = st.text_input("País de Origem", value=filme_selecionado[4])
             categoria = st.text_input("Categoria", value=filme_selecionado[5])
             duracao = st.number_input("Duração", min_value=1, value=filme_selecionado[6])
@@ -263,7 +264,7 @@ elif st.session_state.current_page == "Modo Pesquisa":
     with form:
         titulo = st.text_input("Digite o título do filme")
         cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
-        ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
+        ano = st.number_input("Digite o ano de lançamento", min_value=1901, max_value=datetime.now().year, value=None)
         pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "Estados Unidos", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
         src = st.form_submit_button("Pesquisar")
 
