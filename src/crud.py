@@ -120,7 +120,7 @@ def get_filmes_recentes(conn, limit=5):
     cursor.close()
     return filmes
 
-def get_filmes_filtrado(titulo, cat, ano, pais):
+def get_filmes_filtrado(titulo, cat, ano, pais, diretor):
     db = connect_db()
     cursor = db.cursor()
 
@@ -131,6 +131,7 @@ def get_filmes_filtrado(titulo, cat, ano, pais):
         AND (%s IS NULL OR categoria = %s)
         AND (%s IS NULL OR ano_lancamento = %s)
         AND (%s IS NULL OR pais_origem = %s)
+        AND (%s IS NULL OR nome_diretor = %s)
     """
 
     # Atribuir None para variáveis vazias e evitar problemas com %s
@@ -138,7 +139,7 @@ def get_filmes_filtrado(titulo, cat, ano, pais):
         titulo = f"%{titulo}%"
 
     # Executar a query com os valores
-    cursor.execute(query, (titulo, titulo, cat, cat, ano, ano, pais, pais))
+    cursor.execute(query, (titulo, titulo, cat, cat, ano, ano, pais, pais, diretor, diretor))
     filmes = cursor.fetchall()
     return filmes
 
@@ -170,4 +171,23 @@ def get_filmes_por_ano(conn):
     cursor.close()
     return result
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor']
+def start_routine():
+    db = connect_db()
+    cursor = db.cursor()
+
+    query = "SELECT nome_diretor FROM diretor"
+    cursor.execute(query, "")
+    result_diretor = cursor.fetchall()
+
+    query = "SELECT nome_diretor FROM filme"
+    cursor.execute(query, "")
+    result_filme = cursor.fetchall()
+
+    for i in range(len(result_diretor)):
+        if result_diretor[i] not in result_filme:
+            query = "DELETE FROM diretor WHERE nome_diretor = %s"
+            values = (result_diretor[i][0], )
+            cursor.execute(query, values)
+            db.commit()
+
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor', 'start_routine']

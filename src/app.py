@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, insert_diretor, remover_diretor
+from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, start_routine
 from db_connect import connect_db 
 import plotly.express as px
 
@@ -83,6 +83,7 @@ def change_page(page):
 
 # Exibindo a tela inicial e botões de navegação
 if st.session_state.current_page == "Início":
+    start_routine()
     st.subheader("Filmes Recentemente Adicionados")
     
     # Exibindo filmes recentes
@@ -168,6 +169,7 @@ elif st.session_state.current_page == "Consultar Filmes":
     with form:
         titulo = st.text_input("Digite o título do filme")
         cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
+        diretor = st.selectbox("Selecione o diretor", [""] + get_diretores(), placeholder='')
         ano = st.number_input("Digite o ano de lançamento", min_value=1800, max_value=2024, value=None)
         pais = st.selectbox("Selecione o país de origem", ["", "Brasil", "EUA", "França", "Itália", "Japão", "Reino Unido"], placeholder='')
         src = st.form_submit_button("Pesquisar")
@@ -186,8 +188,8 @@ elif st.session_state.current_page == "Consultar Filmes":
             pais = None
 
         # Obter filmes filtrados
-        filmes = get_filmes_filtrado(titulo, cat, ano, pais)
-        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        filmes = get_filmes_filtrado(titulo, cat, ano, pais, diretor)
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
         
         if df.empty:
             st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
@@ -198,7 +200,7 @@ elif st.session_state.current_page == "Consultar Filmes":
     else:
         # Se não há pesquisa, exibir todos os filmes
         filmes = get_filmes()
-        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
         st.dataframe(df)
 
     # Botão de voltar
@@ -292,19 +294,21 @@ elif st.session_state.current_page == "Gráficos":
     filmes_dados = get_filmes()  # Substitua por sua função que retorna os dados
 
     # Transformar em DataFrame
-    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
 
     # Exibir uma lista para o usuário selecionar qual dado será mostrado no gráfico
-    opcoes = ["Ano", "País", "Duração"]  # Ajuste conforme suas colunas
+    opcoes = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
     variavel_escolhida = st.selectbox("Escolha a variável para mostrar no gráfico", opcoes)
 
     # Contar os filmes por variável escolhida
     if variavel_escolhida == "Ano":
         filmes_por_variavel = df_filmes.groupby("Ano").size().reset_index(name='Total de Filmes')
-    elif   variavel_escolhida == "País":
+    elif  variavel_escolhida == "País":
         filmes_por_variavel = df_filmes.groupby("País").size().reset_index(name='Total de Filmes')
     elif variavel_escolhida == "Duração":
         filmes_por_variavel = df_filmes.groupby("Duração").size().reset_index(name='Total de Filmes')
+    elif variavel_escolhida == "Diretor":
+        filmes_por_variavel = df_filmes.groupby("Diretor").size().reset_index(name='Total de Filmes')
 
     # Exibir o gráfico de barras com base na variável escolhida
     st.bar_chart(filmes_por_variavel.set_index(variavel_escolhida)['Total de Filmes'])
@@ -314,10 +318,10 @@ elif st.session_state.current_page == "Gráficos":
 
     # Obter todos os dados dos filmes
     filmes_dados = get_filmes()  # Ajuste conforme necessário
-    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Extra"])
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
 
     # Escolha das variáveis
-    opcoes_variaveis = ["Ano", "País", "Duração"]  # Ajuste conforme suas colunas
+    opcoes_variaveis = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
 
     variavel_x = st.selectbox("Escolha a variável para o eixo X", opcoes_variaveis)
     variavel_y = st.selectbox("Escolha a variável para o eixo Y", opcoes_variaveis)
@@ -327,15 +331,19 @@ elif st.session_state.current_page == "Gráficos":
         x_data = df_filmes['Ano']
     elif variavel_x == "Duração":
         x_data = df_filmes['Duração']
-    else:  # "País"
+    elif variavel_x == 'País':
         x_data = df_filmes['País']
+    else:
+        x_data = df_filmes['Diretor']
 
     if variavel_y == "Ano":
         y_data = df_filmes['Ano']
     elif variavel_y == "Duração":
         y_data = df_filmes['Duração']
-    else:  # "País"
+    elif variavel_y == 'País':
         y_data = df_filmes['País']
+    else:
+        y_data = df_filmes['Diretor']
     # Exibir gráfico de dispersão
     st.subheader(f"Gráfico de Dispersão: {variavel_x} vs {variavel_y}")
     if not x_data.empty and not y_data.empty:
