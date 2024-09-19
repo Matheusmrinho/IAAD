@@ -84,6 +84,21 @@ def get_filmes_filtrado(titulo, cat, ano, pais):
     filmes = cursor.fetchall()
     return filmes
 
+def filme_ja_cadastrado(titulo_brasil):
+    db = connect_db()
+    cursor = db.cursor()
+
+    # Query para verificar se o filme com o mesmo título já está cadastrado
+    query = """
+        SELECT COUNT(*) FROM filme
+        WHERE titulo_brasil = %s
+    """
+    cursor.execute(query, (titulo_brasil,))
+    result = cursor.fetchone()
+
+    # Se o resultado for maior que 0, significa que já existe um filme com o mesmo título
+    return result[0] > 0
+
 def get_filmes_por_ano(conn):
     query = """
     SELECT ano_lancamento, COUNT(*) as total
@@ -97,4 +112,4 @@ def get_filmes_por_ano(conn):
     cursor.close()
     return result
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano']
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado']

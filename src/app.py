@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from crud import insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
+from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano
 from db_connect import connect_db 
 import plotly.express as px
 
@@ -132,8 +132,21 @@ elif st.session_state.current_page == "Cadastrar Filme":
         duracao = st.number_input("Duração (minutos)", min_value=1)
 
         if st.form_submit_button("Cadastrar"):
-            insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
-            st.markdown(f"<div class='stSuccess'>Filme '{titulo_brasil}' cadastrado com sucesso!</div>", unsafe_allow_html=True)
+        # Verificar se o filme já existe com base no título original
+            if filme_ja_cadastrado(titulo_brasil):
+        # Exibir mensagem de erro se o filme já estiver cadastrado
+                 st.markdown(
+            f"<div class='stError'>Erro: O filme '{titulo_brasil}' já está cadastrado! Tente um título diferente.</div>",
+            unsafe_allow_html=True
+        )
+            else:
+                try:
+                    # Inserir o filme no banco de dados
+                    insert_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
+                    st.markdown(f"<div class='stSuccess'>Filme '{titulo_brasil}' cadastrado com sucesso!</div>", unsafe_allow_html=True)
+                except Exception as e:
+                    st.markdown("<div class='stError'>Erro: O índice já existe. Tente cadastrar um filme com um número diferente!</div>", unsafe_allow_html=True)
+
     
     if st.button("Voltar"):
         change_page("Início")  # Botão para retornar à página inicial
