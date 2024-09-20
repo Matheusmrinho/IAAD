@@ -168,7 +168,7 @@ elif st.session_state.current_page == "Consultar Filmes":
     form = st.form('pesquisa_filmes')
 
     with form:
-        titulo = st.text_input("Digite o título do filme")
+        titulo = st.text_input("Digite o título do filme", placeholder="Título em inglês ou português")
         cat = st.selectbox("Selecione a categoria", ["", "Animação", "Drama", "Comédia", "Romance", "Ação", "Ficção Científica"], placeholder='')
         diretor = st.selectbox("Selecione o diretor", [""] + get_diretores(), placeholder='')
         ano = st.number_input("Digite o ano de lançamento", min_value=1901, max_value=datetime.now().year, value=None)
@@ -187,6 +187,8 @@ elif st.session_state.current_page == "Consultar Filmes":
             ano = None
         if not pais:
             pais = None
+        if not diretor:
+            diretor = None
 
         # Obter filmes filtrados
         filmes = get_filmes_filtrado(titulo, cat, ano, pais, diretor)

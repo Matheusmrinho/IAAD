@@ -124,10 +124,12 @@ def get_filmes_filtrado(titulo, cat, ano, pais, diretor):
     db = connect_db()
     cursor = db.cursor()
 
+    print(titulo, cat, ano, pais, diretor)
+
     # Query base
     query = """
         SELECT * FROM filme
-        WHERE (%s IS NULL OR titulo_brasil LIKE %s)
+        WHERE (%s IS NULL OR (titulo_brasil LIKE %s OR titulo_original LIKE %s))
         AND (%s IS NULL OR categoria = %s)
         AND (%s IS NULL OR ano_lancamento = %s)
         AND (%s IS NULL OR pais_origem = %s)
@@ -139,7 +141,7 @@ def get_filmes_filtrado(titulo, cat, ano, pais, diretor):
         titulo = f"%{titulo}%"
 
     # Executar a query com os valores
-    cursor.execute(query, (titulo, titulo, cat, cat, ano, ano, pais, pais, diretor, diretor))
+    cursor.execute(query, (titulo, titulo, titulo, cat, cat, ano, ano, pais, pais, diretor, diretor))
     filmes = cursor.fetchall()
     return filmes
 
