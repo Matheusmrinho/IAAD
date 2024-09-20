@@ -228,6 +228,7 @@ elif st.session_state.current_page == "Atualizar Filme":
             pais_origem = st.text_input("País de Origem", value=filme_selecionado[4])
             categoria = st.text_input("Categoria", value=filme_selecionado[5])
             duracao = st.number_input("Duração", min_value=1, value=filme_selecionado[6])
+            num_diretor = st.number_input("Número do Diretor", min_value=1, value=filme_selecionado[7])
 
             if st.form_submit_button("Atualizar"):
                 update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
