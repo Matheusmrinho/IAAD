@@ -94,10 +94,18 @@ if st.session_state.current_page == "Início":
     st.markdown(html, unsafe_allow_html=True)
 
     st.subheader("Extras")
-    col1, = st.columns(1)
+    col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("Gráficos ➡️"):
             change_page("Gráficos")
+    
+    with col2:
+        if st.button("Triggers ➡️"):
+            change_page("Triggers")
+    
+    with col3:
+        if st.button("View ➡️"):
+            change_page("View")
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
@@ -317,9 +325,6 @@ elif st.session_state.current_page == "Gráficos":
     # Exibir o gráfico de barras com base na variável escolhida
     st.bar_chart(filmes_por_variavel.set_index(variavel_escolhida)['Total de Filmes'])
 
-    #########################
-
-
     # Obter todos os dados dos filmes
     filmes_dados = get_filmes()  # Ajuste conforme necessário
     df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
@@ -363,5 +368,51 @@ elif st.session_state.current_page == "Gráficos":
 
     if st.button("Voltar"):
         change_page("Início")
+
+elif st.session_state.current_page == "Triggers":
+    st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
+    st.subheader("Triggers")
+
+    # Exibir os logs de alterações nos filmes
+    query_filme_log = "SELECT * FROM filme_log"
+    df_filme_log = pd.read_sql(query_filme_log, conn)
+    st.write("Logs de Alterações em Filmes")
+    st.dataframe(df_filme_log)
+
+    if st.button("Voltar"):
+        change_page("Início")
+
+    # Exibir os logs de exibições alteradas
+    query_exibicao_log = "SELECT * FROM log_exibicao"
+    df_exibicao_log = pd.read_sql(query_exibicao_log, conn)
+    st.write("Logs de Alterações em Exibições")
+    st.dataframe(df_exibicao_log)
+
+    if st.button("Voltar"):
+        change_page("Início")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+elif st.session_state.current_page == "View":
+    st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
+    st.subheader("View")
+
+    query_view = "SELECT * FROM view_filmes_maior_100"
+    df_view = pd.read_sql(query_view, conn)
+
+    # Exibir os dados da view no Streamlit
+    st.write("Visualização da View de Filmes com Duração ≥ 100 minutos")
+    st.dataframe(df_view)
+
+    query_view = "SELECT * FROM nome_filme_canal_data_exibicao"
+    df_view = pd.read_sql(query_view, conn)
+
+    st.write("Filmes com canais, dataas, horaários de exibição e categoria")
+    st.dataframe(df_view)
+
+    if st.button("Voltar"):
+        change_page("Início")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 conn.close()
