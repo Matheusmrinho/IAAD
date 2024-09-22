@@ -89,7 +89,7 @@ if st.session_state.current_page == "Início":
     
     # Exibindo filmes recentes
     filmes_recentes = get_filmes_recentes(conn)  
-    df = pd.DataFrame(filmes_recentes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
+    df = pd.DataFrame(filmes_recentes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
     html = df.to_html(index=False, classes='result-table')
     st.markdown(html, unsafe_allow_html=True)
 
@@ -106,6 +106,7 @@ if st.session_state.current_page == "Início":
     with col3:
         if st.button("View ➡️"):
             change_page("View")
+    
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
@@ -200,7 +201,7 @@ elif st.session_state.current_page == "Consultar Filmes":
 
         # Obter filmes filtrados
         filmes = get_filmes_filtrado(titulo, cat, ano, pais, diretor)
-        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
         
         if df.empty:
             st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
@@ -211,7 +212,7 @@ elif st.session_state.current_page == "Consultar Filmes":
     else:
         # Se não há pesquisa, exibir todos os filmes
         filmes = get_filmes()
-        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
         st.dataframe(df)
 
     # Botão de voltar
@@ -236,14 +237,14 @@ elif st.session_state.current_page == "Atualizar Filme":
             pais_origem = st.text_input("País de Origem", value=filme_selecionado[4])
             categoria = st.text_input("Categoria", value=filme_selecionado[5])
             duracao = st.number_input("Duração", min_value=1, value=filme_selecionado[6])
-            num_diretor = st.number_input("Número do Diretor", min_value=1, value=filme_selecionado[7])
-
+            
             if st.form_submit_button("Atualizar"):
-                update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao)
+                update_filme(num_filme, titulo_original, titulo_brasil, ano_lancamento, pais_origem, categoria, duracao, diretor)
                 st.markdown(f"<div class='stSuccess'>Filme '{titulo_brasil}' atualizado com sucesso!</div>", unsafe_allow_html=True)
+
     
     if st.button("Voltar"):
-        change_page("Início")  # Botão para retornar à página inicial
+        change_page("Início")  
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -283,7 +284,7 @@ elif st.session_state.current_page == "Modo Pesquisa":
     if src:
         filmes = get_filmes_filtrado(titulo, cat, ano, pais)
         print(filmes)
-        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Coluna Adicional"])
+        df = pd.DataFrame(filmes, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
         
         if df.empty:
             st.markdown("<div class='stSuccess'>Nenhum filme encontrado com os filtros selecionados!</div>", unsafe_allow_html=True)
@@ -306,7 +307,7 @@ elif st.session_state.current_page == "Gráficos":
     filmes_dados = get_filmes()  # Substitua por sua função que retorna os dados
 
     # Transformar em DataFrame
-    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
 
     # Exibir uma lista para o usuário selecionar qual dado será mostrado no gráfico
     opcoes = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
@@ -327,7 +328,7 @@ elif st.session_state.current_page == "Gráficos":
 
     # Obter todos os dados dos filmes
     filmes_dados = get_filmes()  # Ajuste conforme necessário
-    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor"])
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
 
     # Escolha das variáveis
     opcoes_variaveis = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
@@ -373,20 +374,43 @@ elif st.session_state.current_page == "Triggers":
     st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
     st.subheader("Triggers")
 
-    # Exibir os logs de alterações nos filmes
     query_filme_log = "SELECT * FROM filme_log"
     df_filme_log = pd.read_sql(query_filme_log, conn)
     st.write("Logs de Alterações em Filmes")
     st.dataframe(df_filme_log)
 
-    if st.button("Voltar"):
-        change_page("Início")
+    query_filme_delete_log = """
+    SELECT * FROM filme_log 
+    WHERE new_titulo IS NULL
+    """
+    df_filme_delete_log = pd.read_sql(query_filme_delete_log, conn)
+    st.write("Logs de Exclusões de Filmes")
+    st.dataframe(df_filme_delete_log)
 
-    # Exibir os logs de exibições alteradas
+    query_qtd_exibicoes = "SELECT num_filme, titulo_original, qtd_exibicoes FROM filme"
+    df_qtd_exibicoes = pd.read_sql(query_qtd_exibicoes, conn)
+    st.write("Quantidade de Exibições por Filme")
+    st.dataframe(df_qtd_exibicoes)
+
     query_exibicao_log = "SELECT * FROM log_exibicao"
     df_exibicao_log = pd.read_sql(query_exibicao_log, conn)
     st.write("Logs de Alterações em Exibições")
     st.dataframe(df_exibicao_log)
+
+    query_duracao_filme = "SELECT num_filme, titulo_original, duracao FROM filme WHERE duracao < 40"
+    df_duracao_filme = pd.read_sql(query_duracao_filme, conn)
+    st.write("Filmes com Duração Inferior a 40 Minutos")
+    st.dataframe(df_duracao_filme)
+
+    query_exibicoes_apos_delete = "SELECT * FROM exibicao"
+    df_exibicoes_apos_delete = pd.read_sql(query_exibicoes_apos_delete, conn)
+    st.write("Exibições Atuais Após Exclusões de Filmes")
+    st.dataframe(df_exibicoes_apos_delete)
+
+    query_canal_sigla = "SELECT num_canal, nome, sigla FROM canal"
+    df_canal_sigla = pd.read_sql(query_canal_sigla, conn)
+    st.write("Atualização Automática da Sigla dos Canais")
+    st.dataframe(df_canal_sigla)
 
     if st.button("Voltar"):
         change_page("Início")
