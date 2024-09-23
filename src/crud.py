@@ -1,6 +1,5 @@
 from db_connect import connect_db
 
-
 # Função para inserir um novo filme
 def insert_filme(num_filme, titulo_original, titulo_brasil, diretor, ano_lancamento, pais_origem, categoria, duracao):
     db = connect_db()
@@ -204,4 +203,29 @@ def start_routine():
             cursor.execute(query, values)
             db.commit()
 
-__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor', 'start_routine']
+def delete_diretoraf(nome_diretor):
+    db = connect_db()
+    cursor = db.cursor()
+    query = "SELECT num_filme FROM filme WHERE nome_diretor = %s"
+    cursor.execute(query, (nome_diretor,))
+    result = cursor.fetchall()
+    print(result)
+    
+    for i in range(len(result)):
+        query = "DELETE FROM exibicao WHERE num_filme = %s"
+        cursor.execute(query, (result[i][0],))
+        db.commit()
+        print('Exibicao deletada')
+
+    query = "DELETE FROM filme WHERE nome_diretor = %s"
+    cursor.execute(query, (nome_diretor,))
+    db.commit()
+    print('Filme deletado')
+
+    query = "DELETE FROM diretor WHERE nome_diretor = %s"
+    cursor.execute(query, (nome_diretor,))
+    db.commit()
+    print('Diretor deletado')
+    print('Ready to rock!')
+
+__all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor', 'start_routine', 'delete_diretoraf']

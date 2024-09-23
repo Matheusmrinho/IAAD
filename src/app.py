@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, start_routine
+from crud import filme_ja_cadastrado, insert_filme, get_filmes, update_filme, delete_filme, get_filmes_recentes, get_filmes_filtrado, get_filmes_por_ano, get_new_numfilm, get_diretores, start_routine, delete_diretoraf
 from db_connect import connect_db 
 import plotly.express as px
 from datetime import datetime
@@ -110,7 +110,7 @@ if st.session_state.current_page == "Início":
     
     # Exibindo botões para navegação entre os CRUD
     st.subheader("Ações CRUD")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         if st.button("Cadastrar Filme ➕"):
@@ -127,6 +127,10 @@ if st.session_state.current_page == "Início":
     with col4:
         if st.button("Remover Filme 🗑️"):
             change_page("Remover Filme")
+
+    with col5:
+        if st.button("Remover Diretor 🗑️"):
+            change_page("Remover Diretor")
 
 # Páginas de CRUD baseadas no estado da sessão
 elif st.session_state.current_page == "Cadastrar Filme":
@@ -260,7 +264,26 @@ elif st.session_state.current_page == "Remover Filme":
             st.markdown(f"<div class='stSuccess'>Filme '{filme_selecionado[2]}' removido com sucesso!</div>", unsafe_allow_html=True)
             st.session_state.current_page = "Remover Filme"
         except Exception as e:
-            st.markdown(f"<div class='stError'>Erro ao remover filme: ele está em exibição</div>", unsafe_allow_html=True)
+            st.error('Aviso: O filme está em exibição e não pode ser removido! Isso violaria a integridade referencial do banco de dados (entre exibição e filmes).')
+    
+    if st.button("Voltar"):
+        change_page("Início")  
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+elif st.session_state.current_page == "Remover Diretor":
+    st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
+    st.subheader("Remover Diretor")
+    st.markdown('Aviso: Ao remover um diretor, todos os filmes associados serão removidos!')
+    diretores = get_diretores()
+    diretor_selecionado = st.selectbox("Selecione um diretor para remover", diretores)
+    
+    if st.button(f"Remover '{diretor_selecionado}'"):
+        try:
+            delete_diretoraf(diretor_selecionado)
+            st.markdown(f"<div class='stSuccess'>Diretor '{diretor_selecionado}' removido com sucesso! Filmes e exibições associados também foram removidos</div>", unsafe_allow_html=True)
+        except Exception as e:
+            st.error('O diretor não pode ser removido! Isso violaria a integridade referencial do banco de dados (entre diretor e filme).')
     
     if st.button("Voltar"):
         change_page("Início")  
