@@ -326,15 +326,16 @@ elif st.session_state.current_page == "Gráficos":
     # Gráfico de filmes por ano
     st.subheader("Pesquise sobre os filmes!")
 
-    # Obter todos os dados dos filmes usando sua função existente
-    filmes_dados = get_filmes()  # Substitua por sua função que retorna os dados
+    
+    filmes_dados = get_filmes()  
 
     # Transformar em DataFrame
     df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
 
     # Exibir uma lista para o usuário selecionar qual dado será mostrado no gráfico
-    opcoes = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
+    opcoes = ["Ano", "País", "Duração", "Diretor"]  
     variavel_escolhida = st.selectbox("Escolha a variável para mostrar no gráfico", opcoes)
+
 
     # Contar os filmes por variável escolhida
     if variavel_escolhida == "Ano":
@@ -354,7 +355,7 @@ elif st.session_state.current_page == "Gráficos":
     df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
 
     # Escolha das variáveis
-    opcoes_variaveis = ["Ano", "País", "Duração", "Diretor"]  # Ajuste conforme suas colunas
+    opcoes_variaveis = ["Ano", "País", "Duração", "Diretor"] 
 
     variavel_x = st.selectbox("Escolha a variável para o eixo X", opcoes_variaveis)
     variavel_y = st.selectbox("Escolha a variável para o eixo Y", opcoes_variaveis)
@@ -389,6 +390,27 @@ elif st.session_state.current_page == "Gráficos":
     fig = px.scatter(scatter_data, x=variavel_x, y=variavel_y, title=f"Gráfico de Dispersão: {variavel_x} vs {variavel_y}")
     st.plotly_chart(fig)
 
+    def plot_filmes_por_diretor():
+        filmes_dados = get_filmes()  
+    df_filmes = pd.DataFrame(filmes_dados, columns=["Número", "Título Original", "Título Brasil", "Ano", "País", "Categoria", "Duração", "Diretor", "Exibições"])
+
+    # Agrupar os filmes por diretor e coletar os títulos em uma lista
+    filmes_por_diretor = df_filmes.groupby("Diretor")["Título Original"].apply(list).reset_index()
+    filmes_por_diretor.columns = ["Diretor", "Títulos"]
+
+    
+    filmes_por_diretor["Número de Filmes"] = filmes_por_diretor["Títulos"].apply(len)
+
+    
+    fig = px.bar(filmes_por_diretor, 
+                 x='Diretor', 
+                 y='Número de Filmes', 
+                 title='Número de Filmes por Diretor',
+                 hover_data=['Títulos'],
+                 labels={'Número de Filmes': 'Número de Filmes', 'Diretor': 'Diretor'})
+
+    
+    st.plotly_chart(fig)
 
     if st.button("Voltar"):
         change_page("Início")
