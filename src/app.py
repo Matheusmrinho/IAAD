@@ -374,9 +374,12 @@ elif st.session_state.current_page == "Triggers":
     st.markdown("<div class='crud-page'>", unsafe_allow_html=True)
     st.subheader("Triggers")
 
-    query_filme_log = "SELECT * FROM filme_log"
+    query_filme_log = """
+    SELECT * FROM filme_log
+    WHERE new_titulo IS NOT NULL  -- Filtra para mostrar apenas as alterações de título
+    """
     df_filme_log = pd.read_sql(query_filme_log, conn)
-    st.write("Logs de Alterações em Filmes")
+    st.write("Logs de Alterações em Títulos de Filmes")
     st.dataframe(df_filme_log)
 
     query_filme_delete_log = """
@@ -431,7 +434,7 @@ elif st.session_state.current_page == "View":
     query_view = "SELECT * FROM nome_filme_canal_data_exibicao"
     df_view = pd.read_sql(query_view, conn)
 
-    st.write("Filmes com canais, dataas, horaários de exibição e categoria")
+    st.write("Filmes com canais, datas, horários de exibição e categoria")
     st.dataframe(df_view)
 
     if st.button("Voltar"):
