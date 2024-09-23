@@ -42,12 +42,10 @@ O projeto contempla um **DER** (Diagrama Entidade-Relacionamento) com três tabe
 ## 🗂️ Estrutura do Projeto
 
 ```bash
-├── 📁 data              # Contém o script SQL de criação e popular as tabelas
-├── 📁 src               # Contém o código-fonte do sistema
+├── 📁 scripts_sql       # Contém o script SQL de criação e popular as tabelas
+├── 📁 streamlit         # Contém o código-fonte do sistema
 │   ├── 📄 app.py        # Arquivo principal do sistema em Streamlit
 │   ├── 📄 crud.py       # Operações CRUD no banco de dados
-│   ├── 📄 trigger.sql   # Script de criação do trigger
-│   ├── 📄 queries.sql   # Consultas SQL avançadas (junções, agregações)
 │   └── 📄 db_connect.py # Funções para conexão com o MySQL
 ├── 📄 README.md         # Este arquivo
 └── 📄 requirements.txt  # Dependências do projeto
