@@ -41,6 +41,7 @@ def get_diretores():
         diretores[i] = diretores[i][0]
     return diretores
 
+# Verifica a maior chave de diretor
 def max_diretor_key():
     db = connect_db()
     cursor = db.cursor()
@@ -122,7 +123,7 @@ def update_diretor(num_filme, num_diretor):
     cursor.execute(query, values)
     db.commit()
 
-
+# Consulta os filmes mais recentes
 def get_filmes_recentes(conn, limit=5):
     cursor = conn.cursor()
     query = "SELECT * FROM filme ORDER BY num_filme DESC LIMIT %s"
@@ -131,6 +132,7 @@ def get_filmes_recentes(conn, limit=5):
     cursor.close()
     return filmes
 
+# Consulta de filmes com filtros de pesquisa
 def get_filmes_filtrado(titulo, cat, ano, pais, diretor):
     db = connect_db()
     cursor = db.cursor()
@@ -156,6 +158,7 @@ def get_filmes_filtrado(titulo, cat, ano, pais, diretor):
     filmes = cursor.fetchall()
     return filmes
 
+# Consulta se o filme já está cadastrado
 def filme_ja_cadastrado(titulo_brasil):
     db = connect_db()
     cursor = db.cursor()
@@ -171,6 +174,7 @@ def filme_ja_cadastrado(titulo_brasil):
     # Se o resultado for maior que 0, significa que já existe um filme com o mesmo título
     return result[0] > 0
 
+# Consulta o filme por ano
 def get_filmes_por_ano(conn):
     query = """
     SELECT ano_lancamento, COUNT(*) as total
@@ -184,25 +188,7 @@ def get_filmes_por_ano(conn):
     cursor.close()
     return result
 
-def start_routine():
-    db = connect_db()
-    cursor = db.cursor()
-
-    query = "SELECT nome_diretor FROM diretor"
-    cursor.execute(query, "")
-    result_diretor = cursor.fetchall()
-
-    query = "SELECT nome_diretor FROM filme"
-    cursor.execute(query, "")
-    result_filme = cursor.fetchall()
-
-    for i in range(len(result_diretor)):
-        if result_diretor[i] not in result_filme:
-            query = "DELETE FROM diretor WHERE nome_diretor = %s"
-            values = (result_diretor[i][0], )
-            cursor.execute(query, values)
-            db.commit()
-
+# Função para exclusão de diretor em cascata
 def delete_diretoraf(nome_diretor):
     db = connect_db()
     cursor = db.cursor()
@@ -227,5 +213,25 @@ def delete_diretoraf(nome_diretor):
     db.commit()
     print('Diretor deletado')
     print('Ready to rock!')
+
+# Função de início de rotina
+def start_routine():
+    db = connect_db()
+    cursor = db.cursor()
+
+    query = "SELECT nome_diretor FROM diretor"
+    cursor.execute(query, "")
+    result_diretor = cursor.fetchall()
+
+    query = "SELECT nome_diretor FROM filme"
+    cursor.execute(query, "")
+    result_filme = cursor.fetchall()
+
+    for i in range(len(result_diretor)):
+        if result_diretor[i] not in result_filme:
+            query = "DELETE FROM diretor WHERE nome_diretor = %s"
+            values = (result_diretor[i][0], )
+            cursor.execute(query, values)
+            db.commit()
 
 __all__ = ['insert_filme', 'get_filmes', 'update_filme', 'delete_filme', 'get_exibicoes', 'get_filmes_recentes', 'get_filmes_filtrado', 'get_filmes_por_ano', 'filme_ja_cadastrado', 'get_new_numfilm', 'get_diretores', 'insert_diretor', 'get_diretor_key', 'pesquisa_diretor', 'remove_diretor', 'start_routine', 'delete_diretoraf']
